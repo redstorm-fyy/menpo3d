@@ -274,7 +274,11 @@ def ply_importer(filepath, asset=None, texture_resolver=None, **kwargs):
         if isinstance(tcoords, np.ndarray) and tcoords.size == 0:
             tcoords = None
 
-    colour_per_vertex = None
+    colour_per_vertex = vtk_to_numpy(polydata.GetPointData().GetScalars())/255.
+    if isinstance(colour_per_vertex, np.ndarray) and colour_per_vertex.size == 0:
+        colour_per_vertex = None
+    if colour_per_vertex is not None:
+        colour_per_vertex.reshape(-1,3)
     return _construct_shape_type(points, trilist, tcoords, texture,
                                  colour_per_vertex)
 
