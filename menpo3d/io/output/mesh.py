@@ -2,6 +2,7 @@ import numpy as np
 
 from menpo.io.output.base import _enforce_only_paths_supported
 from menpo.shape.mesh import TexturedTriMesh
+from menpo.shape.mesh import ColouredTriMesh
 
 
 def obj_exporter(mesh, file_handle, **kwargs):
@@ -81,10 +82,18 @@ def ply_exporter(mesh, file_path, binary=False, **kwargs):
     if isinstance(mesh, TexturedTriMesh):
         pointdata = polydata.GetPointData()
         pointdata.SetTCoords(numpy_to_vtk(mesh.tcoords.points))
+    elif isinstance(mesh,ColouredTriMesh):
+        pointdata = polydata.GetPointData()
+        colours=np.array(mesh.colours*255.,dtype=np.uint8)
+        vtkc=numpy_to_vtk(colours)
+        vtkc.SetName("Colors")
+        pointdata.SetScalars(vtkc)
 
     ply_writer = vtk.vtkPLYWriter()
     ply_writer.SetFileName(str(file_path))
     ply_writer.SetInputData(polydata)
+    if isinstance(mesh,ColouredTriMesh):
+        ply_writer.SetArrayName("Colors")
     if not binary:
         ply_writer.SetFileTypeToASCII()
     else:
