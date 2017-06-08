@@ -429,7 +429,15 @@ def non_rigid_icp_generator(source, target, eps=1e-3,
 
             A_s = sp.vstack(to_stack_A).tocsr()
             B_s = sp.vstack(to_stack_B).tocsr()
-            X = spsolve(A_s, B_s)
+            try:
+                X = spsolve(A_s, B_s)
+            except Exception as e:
+                print(e)
+                #X = np.linalg.lstsq(A_s.toarray(),B_s.toarray())[0] # Is there any method for sparse matrix?
+                X = np.zeros(shape=[A_s.shape[1],B_s.shape[1]])
+                B_s_np=B_s.toarray()
+                for vec_i in range(0,B_s.shape[1]):
+                    X[:,vec_i] = sp.linalg.lsqr(A_s, B_s_np[:, vec_i])[0]
 
             # deform template
             v_i_prev = v_i
